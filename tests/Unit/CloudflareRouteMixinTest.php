@@ -8,12 +8,12 @@ use Yediyuz\CloudflareCache\CloudflareCache;
 it('should not merge tags and TTL across route groups', function () {
     // İlk route grubu
     Route::cache(tags: ['first'], ttl: 30)->group(function () {
-        Route::get('/first', fn() => response('First'));
+        Route::get('/first', fn () => response('First'));
     });
 
     // İkinci route grubu
     Route::cache(tags: ['second'], ttl: 10)->group(function () {
-        Route::get('/second', fn() => response('Second'));
+        Route::get('/second', fn () => response('Second'));
     });
 
     $firstResponse = $this->get('/first');
@@ -75,8 +75,8 @@ test('cache tag must exist in the header only if used', function () {
 });
 
 it('should set correct TTL and tags per route', function () {
-    Route::cache(tags: ['first'], ttl: 30)->get('/first', fn() => 'First');
-    Route::cache(tags: ['second'], ttl: 10)->get('/second', fn() => 'Second');
+    Route::cache(tags: ['first'], ttl: 30)->get('/first', fn () => 'First');
+    Route::cache(tags: ['second'], ttl: 10)->get('/second', fn () => 'Second');
 
     $firstResponse = $this->get('/first');
     $secondResponse = $this->get('/second');
