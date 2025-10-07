@@ -5,6 +5,33 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Yediyuz\CloudflareCache\CloudflareCache;
 
+it('should not merge tags and TTL across route groups', function () {
+    // İlk route grubu
+    Route::cache(tags: ['first'], ttl: 30)->group(function () {
+        Route::get('/first', fn() => response('First'));
+    });
+
+    // İkinci route grubu
+    Route::cache(tags: ['second'], ttl: 10)->group(function () {
+        Route::get('/second', fn() => response('Second'));
+    });
+
+    $firstResponse = $this->get('/first');
+    $secondResponse = $this->get('/second');
+
+    // Cache-Control header
+    $firstResponse->assertHeader('Cache-Control', 'max-age=30, public');
+    $secondResponse->assertHeader('Cache-Control', 'max-age=10, public');
+
+    // Cache-Tags header
+    $firstTags = explode(',', $firstResponse->headers->get('Cache-Tags') ?? '');
+    $secondTags = explode(',', $secondResponse->headers->get('Cache-Tags') ?? '');
+
+    // Test: İlk route sadece 'first', ikinci route sadece 'second' içermeli
+    expect($firstTags)->toContain('first')->not()->toContain('second');
+    expect($secondTags)->toContain('second')->not()->toContain('first');
+});
+
 dataset('cache_mixin_tag_types', [
     ['foo', ['foo']],
     [['foo', 'bar'], ['foo', 'bar']],
