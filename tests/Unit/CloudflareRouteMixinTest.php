@@ -46,3 +46,20 @@ test('cache tag must exist in the header only if used', function () {
     $response = $this->get('content_in_args');
     $this->assertTrue($response->headers->has('Cache-Tags'));
 });
+
+it('should set correct TTL and tags per route', function () {
+    Route::cache(tags: ['first'], ttl: 30)->get('/first', fn() => 'First');
+    Route::cache(tags: ['second'], ttl: 10)->get('/second', fn() => 'Second');
+
+    $firstResponse = $this->get('/first');
+    $secondResponse = $this->get('/second');
+
+    $firstResponse->assertHeader('Cache-Control', 'max-age=30, public');
+    $secondResponse->assertHeader('Cache-Control', 'max-age=10, public');
+
+    $firstTags = explode(',', $firstResponse->headers->get('Cache-Tags'));
+    $secondTags = explode(',', $secondResponse->headers->get('Cache-Tags'));
+
+    expect($firstTags)->toContain('first')->not()->toContain('second');
+    expect($secondTags)->toContain('second')->not()->toContain('first');
+});
