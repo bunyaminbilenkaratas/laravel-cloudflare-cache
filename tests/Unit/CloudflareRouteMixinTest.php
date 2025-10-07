@@ -2,32 +2,30 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Route;
-use Yediyuz\CloudflareCache\CloudflareCache;
-
-use Yediyuz\CloudflareCache\CloudflarePagesMiddleware;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpFoundation\Response;
+use Yediyuz\CloudflareCache\CloudflareCache;
+use Yediyuz\CloudflareCache\CloudflarePagesMiddleware;
 
 it('should merge tags incorrectly in old middleware', function () {
-    $middleware = new CloudflarePagesMiddleware();
+    $middleware = new CloudflarePagesMiddleware;
 
     $request = Request::create('/first', 'GET');
     $response1 = new Response('First');
     $response2 = new Response('Second');
 
     // İlk route group
-    $middleware->handle($request, fn($req) => $response1, '30', 'first');
+    $middleware->handle($request, fn ($req) => $response1, '30', 'first');
 
     // İkinci route group
-    $middleware->handle($request, fn($req) => $response2, '10', 'second');
+    $middleware->handle($request, fn ($req) => $response2, '10', 'second');
 
     $tags = explode(',', $response2->headers->get('Cache-Tags') ?? '');
 
     // Bu attribute merge bug’ını gösterecek
     expect($tags)->toContain('first')->toContain('second');
 });
-
 
 it('merges tags and overwrites TTL for route groups (demonstrates existing bug)', function () {
     // İlk route grubu
