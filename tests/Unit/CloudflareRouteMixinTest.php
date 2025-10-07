@@ -5,16 +5,15 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Yediyuz\CloudflareCache\CloudflareCache;
 
-
 it('merges tags and overwrites TTL for route groups (demonstrates existing bug)', function () {
     // İlk route grubu
     Route::cache(tags: ['first'], ttl: 30)->group(function () {
-        Route::get('/first', fn() => response('First'));
+        Route::get('/first', fn () => response('First'));
     });
 
     // İkinci route grubu
     Route::cache(tags: ['second'], ttl: 10)->group(function () {
-        Route::get('/second', fn() => response('Second'));
+        Route::get('/second', fn () => response('Second'));
     });
 
     $firstResponse = $this->get('/first');
